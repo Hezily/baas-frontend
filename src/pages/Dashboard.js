@@ -14,6 +14,12 @@ function Dashboard({ token, setToken }) {
 
   const [message, setMessage] = useState("");
 
+  // 🔥 DATA STATES
+  const [collection, setCollection] = useState("users");
+  const [data, setData] = useState([]);
+  const [jsonInput, setJsonInput] = useState("{}");
+  const [apiKey, setApiKey] = useState("");
+
   const showMessage = (msg) => {
     setMessage(msg);
     setTimeout(() => setMessage(""), 3000);
@@ -25,6 +31,8 @@ function Dashboard({ token, setToken }) {
     showMessage("Logged out 👋");
   };
 
+  // ================= PROJECT =================
+
   const createProject = async () => {
     try {
       await axios.post(
@@ -35,7 +43,7 @@ function Dashboard({ token, setToken }) {
       showMessage("Project created ✅");
       setName("");
     } catch (err) {
-      showMessage(err.response?.data?.error || "Error creating project");
+      showMessage("Error creating project");
     }
   };
 
@@ -45,10 +53,12 @@ function Dashboard({ token, setToken }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProjects(res.data);
-    } catch (err) {
-      showMessage(err.response?.data?.error || "Error loading projects");
+    } catch {
+      showMessage("Error loading projects");
     }
   };
+
+  // ================= API KEYS =================
 
   const createApiKey = async () => {
     try {
@@ -58,9 +68,8 @@ function Dashboard({ token, setToken }) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       showMessage("API key created ✅");
-      setProjectId("");
-    } catch (err) {
-      showMessage(err.response?.data?.error || "Error creating API key");
+    } catch {
+      showMessage("Error creating API key");
     }
   };
 
@@ -70,14 +79,14 @@ function Dashboard({ token, setToken }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       setApiKeys(res.data);
-    } catch (err) {
-      showMessage(err.response?.data?.error || "Error loading API keys");
+    } catch {
+      showMessage("Error loading API keys");
     }
   };
 
   const copyKey = (key) => {
     navigator.clipboard.writeText(key);
-    showMessage("API key copied ✅");
+    showMessage("Copied ✅");
   };
 
   const deleteKey = async (id) => {
@@ -85,39 +94,81 @@ function Dashboard({ token, setToken }) {
       await axios.delete(`${API}/api/user/api-key/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      showMessage("API key deleted ✅");
+      showMessage("Deleted ✅");
       getApiKeys();
-    } catch (err) {
-      showMessage(err.response?.data?.error || "Error deleting key");
+    } catch {
+      showMessage("Delete failed");
     }
   };
+
+  // ================= DATA API =================
+
+  const loadData = async () => {
+    try {
+      const res = await axios.get(`${API}/api/data/${collection}`, {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      });
+      setData(res.data);
+    } catch {
+      showMessage("Error loading data");
+    }
+  };
+
+  const createData = async () => {
+    try {
+      await axios.post(
+        `${API}/api/data/${collection}`,
+        { json: JSON.parse(jsonInput) },
+        {
+          headers: { Authorization: `Bearer ${apiKey}` },
+        }
+      );
+      showMessage("Data added ✅");
+      loadData();
+    } catch {
+      showMessage("Invalid JSON or API key");
+    }
+  };
+
+  const deleteData = async (id) => {
+    try {
+      await axios.delete(
+        `${API}/api/data/${collection}/${id}`,
+        {
+          headers: { Authorization: `Bearer ${apiKey}` },
+        }
+      );
+      showMessage("Deleted ✅");
+      loadData();
+    } catch {
+      showMessage("Delete failed");
+    }
+  };
+
+  // ================= UI =================
 
   return (
     <div className="layout">
 
-      {/* 🔔 TOAST */}
       {message && <div className="toast">{message}</div>}
 
-      {/* 🧭 SIDEBAR */}
+      {/* SIDEBAR */}
       <div className="sidebar">
-        <h2 className="logo">BaaS ⚡</h2>
+        <h2>BaaS ⚡</h2>
 
-        <button onClick={() => setView("projects")}>
-          Projects
-        </button>
-
-        <button onClick={() => setView("keys")}>
-          API Keys
-        </button>
+        <button onClick={() => setView("projects")}>Projects</button>
+        <button onClick={() => setView("keys")}>API Keys</button>
+        <button onClick={() => setView("data")}>Data</button>
 
         <button className="logout-btn" onClick={logout}>
           Logout
         </button>
       </div>
 
-      {/* 📄 MAIN CONTENT */}
+      {/* MAIN */}
       <div className="main">
 
+        {/* PROJECTS */}
         {view === "projects" && (
           <>
             <div className="card">
@@ -127,22 +178,17 @@ function Dashboard({ token, setToken }) {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Project name"
               />
-              <button onClick={createProject}>
-                Create
-              </button>
+              <button onClick={createProject}>Create</button>
             </div>
 
             <div className="card">
               <h2>Projects</h2>
-              <button onClick={getProjects}>
-                Load Projects
-              </button>
+              <button onClick={getProjects}>Load</button>
 
               <ul>
                 {projects.map((p) => (
                   <li key={p.id}>
-                    <span>{p.name}</span>
-                    <span>ID: {p.id}</span>
+                    {p.name} (ID: {p.id})
                   </li>
                 ))}
               </ul>
@@ -150,14 +196,14 @@ function Dashboard({ token, setToken }) {
           </>
         )}
 
+        {/* API KEYS */}
         {view === "keys" && (
           <div className="card">
             <h2>API Keys</h2>
 
             <input
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
               placeholder="Project ID"
+              onChange={(e) => setProjectId(e.target.value)}
             />
 
             <button onClick={createApiKey}>Create</button>
@@ -166,25 +212,51 @@ function Dashboard({ token, setToken }) {
             <ul>
               {apiKeys.map((k) => (
                 <li key={k.id}>
-                  <span>
-                    {k.project_name} → ****{k.api_key.slice(-6)}
-                  </span>
+                  {k.project_name} → ****{k.api_key.slice(-6)}
 
-                  <div>
-                    <button onClick={() => copyKey(k.api_key)}>
-                      Copy
-                    </button>
+                  <button onClick={() => copyKey(k.api_key)}>Copy</button>
+                  <button onClick={() => deleteKey(k.id)}>Delete</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-                    <button
-                      onClick={() => deleteKey(k.id)}
-                      style={{
-                        marginLeft: 8,
-                        background: "linear-gradient(135deg, #ef4444, #dc2626)"
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
+        {/* DATA EXPLORER */}
+        {view === "data" && (
+          <div className="card">
+            <h2>Data Explorer 🚀</h2>
+
+            <input
+              placeholder="API Key"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+            />
+
+            <input
+              placeholder="Collection (users, posts...)"
+              value={collection}
+              onChange={(e) => setCollection(e.target.value)}
+            />
+
+            <button onClick={loadData}>Load Data</button>
+
+            <textarea
+              rows="4"
+              value={jsonInput}
+              onChange={(e) => setJsonInput(e.target.value)}
+            />
+
+            <button onClick={createData}>Add Data</button>
+
+            <ul>
+              {data.map((item) => (
+                <li key={item.id}>
+                  {JSON.stringify(item.json_data)}
+
+                  <button onClick={() => deleteData(item.id)}>
+                    Delete
+                  </button>
                 </li>
               ))}
             </ul>
