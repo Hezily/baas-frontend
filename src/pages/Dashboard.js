@@ -14,15 +14,15 @@ function Dashboard({ token, setToken }) {
 
   const [message, setMessage] = useState("");
 
-  // 🔥 DATA STATES
+  // DATA
   const [collection, setCollection] = useState("users");
   const [data, setData] = useState([]);
   const [jsonInput, setJsonInput] = useState("{}");
   const [apiKey, setApiKey] = useState("");
 
-  // ✨ EDIT STATES
+  // EDIT
   const [editId, setEditId] = useState(null);
-  const [editJson, setEditJson] = useState("{}");
+  const [editRow, setEditRow] = useState({});
 
   const showMessage = (msg) => {
     setMessage(msg);
@@ -105,7 +105,7 @@ function Dashboard({ token, setToken }) {
     }
   };
 
-  // ================= DATA API =================
+  // ================= DATA =================
 
   const loadData = async () => {
     try {
@@ -130,7 +130,7 @@ function Dashboard({ token, setToken }) {
       showMessage("Data added ✅");
       loadData();
     } catch {
-      showMessage("Invalid JSON or API key");
+      showMessage("Invalid JSON");
     }
   };
 
@@ -149,12 +149,11 @@ function Dashboard({ token, setToken }) {
     }
   };
 
-  // ✏️ UPDATE
   const updateData = async (id) => {
     try {
       await axios.put(
         `${API}/api/data/${collection}/${id}`,
-        { json: JSON.parse(editJson) },
+        { json: editRow },
         {
           headers: { Authorization: `Bearer ${apiKey}` },
         }
@@ -164,11 +163,14 @@ function Dashboard({ token, setToken }) {
       setEditId(null);
       loadData();
     } catch {
-      showMessage("Invalid JSON");
+      showMessage("Update failed");
     }
   };
 
   // ================= UI =================
+
+  const columns =
+    data.length > 0 ? Object.keys(data[0].json_data) : [];
 
   return (
     <div className="layout">
@@ -196,11 +198,7 @@ function Dashboard({ token, setToken }) {
           <>
             <div className="card">
               <h2>Create Project</h2>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Project name"
-              />
+              <input value={name} onChange={(e) => setName(e.target.value)} />
               <button onClick={createProject}>Create</button>
             </div>
 
@@ -224,10 +222,7 @@ function Dashboard({ token, setToken }) {
           <div className="card">
             <h2>API Keys</h2>
 
-            <input
-              placeholder="Project ID"
-              onChange={(e) => setProjectId(e.target.value)}
-            />
+            <input onChange={(e) => setProjectId(e.target.value)} />
 
             <button onClick={createApiKey}>Create</button>
             <button onClick={getApiKeys}>Load</button>
@@ -236,7 +231,6 @@ function Dashboard({ token, setToken }) {
               {apiKeys.map((k) => (
                 <li key={k.id}>
                   {k.project_name} → ****{k.api_key.slice(-6)}
-
                   <button onClick={() => copyKey(k.api_key)}>Copy</button>
                   <button onClick={() => deleteKey(k.id)}>Delete</button>
                 </li>
@@ -245,7 +239,7 @@ function Dashboard({ token, setToken }) {
           </div>
         )}
 
-        {/* DATA EXPLORER */}
+        {/* DATA */}
         {view === "data" && (
           <div className="card">
             <h2>Data Explorer 🚀</h2>
@@ -257,12 +251,12 @@ function Dashboard({ token, setToken }) {
             />
 
             <input
-              placeholder="Collection (users, posts...)"
+              placeholder="Collection"
               value={collection}
               onChange={(e) => setCollection(e.target.value)}
             />
 
-            <button onClick={loadData}>Load Data</button>
+            <button onClick={loadData}>Load</button>
 
             <textarea
               rows="4"
@@ -270,14 +264,16 @@ function Dashboard({ token, setToken }) {
               onChange={(e) => setJsonInput(e.target.value)}
             />
 
-            <button onClick={createData}>Add Data</button>
+            <button onClick={createData}>Add</button>
 
             <table className="data-table">
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Data</th>
-                  <th>Action</th>
+                  {columns.map((col) => (
+                    <th key={col}>{col}</th>
+                  ))}
+                  <th>Actions</th>
                 </tr>
               </thead>
 
@@ -286,17 +282,23 @@ function Dashboard({ token, setToken }) {
                   <tr key={item.id}>
                     <td>{item.id}</td>
 
-                    <td>
-                      {editId === item.id ? (
-                        <textarea
-                          rows="3"
-                          value={editJson}
-                          onChange={(e) => setEditJson(e.target.value)}
-                        />
-                      ) : (
-                        <pre>{JSON.stringify(item.json_data, null, 2)}</pre>
-                      )}
-                    </td>
+                    {columns.map((col) => (
+                      <td key={col}>
+                        {editId === item.id ? (
+                          <input
+                            value={editRow[col] || ""}
+                            onChange={(e) =>
+                              setEditRow({
+                                ...editRow,
+                                [col]: e.target.value,
+                              })
+                            }
+                          />
+                        ) : (
+                          item.json_data[col]
+                        )}
+                      </td>
+                    ))}
 
                     <td>
                       {editId === item.id ? (
@@ -309,12 +311,11 @@ function Dashboard({ token, setToken }) {
                           <button
                             onClick={() => {
                               setEditId(item.id);
-                              setEditJson(JSON.stringify(item.json_data, null, 2));
+                              setEditRow(item.json_data);
                             }}
                           >
                             Edit
                           </button>
-
                           <button onClick={() => deleteData(item.id)}>
                             Delete
                           </button>
