@@ -249,17 +249,35 @@ function Dashboard({ token, setToken }) {
 
             <button onClick={createData}>Add Data</button>
 
-            <ul>
-              {data.map((item) => (
-                <li key={item.id}>
-                  {JSON.stringify(item.json_data)}
+            <table className="data-table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Data</th>
+      <th>Action</th>
+    </tr>
+  </thead>
 
-                  <button onClick={() => deleteData(item.id)}>
-                    Delete
-                  </button>
-                </li>
-              ))}
-            </ul>
+  <tbody>
+    {data.map((item) => (
+      <tr key={item.id}>
+        <td>{item.id}</td>
+
+        <td>
+          <pre>
+            {JSON.stringify(item.json_data, null, 2)}
+          </pre>
+        </td>
+
+        <td>
+          <button onClick={() => deleteData(item.id)}>
+            Delete
+          </button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
           </div>
         )}
 
