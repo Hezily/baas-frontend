@@ -20,6 +20,10 @@ function Dashboard({ token, setToken }) {
   const [jsonInput, setJsonInput] = useState("{}");
   const [apiKey, setApiKey] = useState("");
 
+  // ✨ EDIT STATES
+  const [editId, setEditId] = useState(null);
+  const [editJson, setEditJson] = useState("{}");
+
   const showMessage = (msg) => {
     setMessage(msg);
     setTimeout(() => setMessage(""), 3000);
@@ -42,7 +46,7 @@ function Dashboard({ token, setToken }) {
       );
       showMessage("Project created ✅");
       setName("");
-    } catch (err) {
+    } catch {
       showMessage("Error creating project");
     }
   };
@@ -142,6 +146,25 @@ function Dashboard({ token, setToken }) {
       loadData();
     } catch {
       showMessage("Delete failed");
+    }
+  };
+
+  // ✏️ UPDATE
+  const updateData = async (id) => {
+    try {
+      await axios.put(
+        `${API}/api/data/${collection}/${id}`,
+        { json: JSON.parse(editJson) },
+        {
+          headers: { Authorization: `Bearer ${apiKey}` },
+        }
+      );
+
+      showMessage("Updated ✅");
+      setEditId(null);
+      loadData();
+    } catch {
+      showMessage("Invalid JSON");
     }
   };
 
@@ -250,34 +273,59 @@ function Dashboard({ token, setToken }) {
             <button onClick={createData}>Add Data</button>
 
             <table className="data-table">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Data</th>
-      <th>Action</th>
-    </tr>
-  </thead>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Data</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
 
-  <tbody>
-    {data.map((item) => (
-      <tr key={item.id}>
-        <td>{item.id}</td>
+              <tbody>
+                {data.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.id}</td>
 
-        <td>
-          <pre>
-            {JSON.stringify(item.json_data, null, 2)}
-          </pre>
-        </td>
+                    <td>
+                      {editId === item.id ? (
+                        <textarea
+                          rows="3"
+                          value={editJson}
+                          onChange={(e) => setEditJson(e.target.value)}
+                        />
+                      ) : (
+                        <pre>{JSON.stringify(item.json_data, null, 2)}</pre>
+                      )}
+                    </td>
 
-        <td>
-          <button onClick={() => deleteData(item.id)}>
-            Delete
-          </button>
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
+                    <td>
+                      {editId === item.id ? (
+                        <>
+                          <button onClick={() => updateData(item.id)}>Save</button>
+                          <button onClick={() => setEditId(null)}>Cancel</button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => {
+                              setEditId(item.id);
+                              setEditJson(JSON.stringify(item.json_data, null, 2));
+                            }}
+                          >
+                            Edit
+                          </button>
+
+                          <button onClick={() => deleteData(item.id)}>
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
           </div>
         )}
 
