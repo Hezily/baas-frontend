@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import Docs from "./pages/Docs"; // ✅ NEW
+import Docs from "./pages/Docs";
+import Landing from "./pages/Landing";
 
 import "./App.css";
 
@@ -14,23 +15,24 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        {/* 🔓 Public routes */}
-        <Route path="/" element={<Auth setToken={setToken} />} />
-        <Route path="/docs" element={<Docs />} /> {/* ✅ PUBLIC */}
+        {/* 🌐 PUBLIC ROUTES */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/auth" element={<Auth setToken={setToken} />} />
+        <Route path="/docs" element={<Docs />} />
 
-        {/* 🔐 Protected route */}
+        {/* 🔐 PROTECTED ROUTE */}
         <Route
           path="/dashboard"
           element={
             token ? (
               <Dashboard token={token} setToken={setToken} />
             ) : (
-              <Navigate to="/" />
+              <Navigate to="/auth" />
             )
           }
         />
 
-        {/* ❗ Fallback */}
+        {/* ❗ FALLBACK */}
         <Route path="*" element={<Navigate to="/" />} />
 
       </Routes>
