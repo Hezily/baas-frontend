@@ -1,38 +1,214 @@
-.App {
-  text-align: center;
+/* 🌌 Background */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b, #020617);
+  color: #f1f5f9;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* 📦 Container */
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  animation: fadeIn 0.6s ease-in-out;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* 🧭 Header */
+.header {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  margin-bottom: 25px;
+}
+
+/* 🧱 Card */
+.card {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.8));
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+
+  /* ✨ Animation */
+  animation: slideUp 0.4s ease;
+}
+
+/* 🔤 Inputs */
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(51, 65, 85, 0.7);
   color: white;
+  transition: 0.2s;
 }
 
-.App-link {
-  color: #61dafb;
+input:focus {
+  background: rgba(71, 85, 105, 0.9);
 }
 
-@keyframes App-logo-spin {
+/* 🔘 Buttons */
+button {
+  padding: 10px 16px;
+  margin: 6px 6px 10px 0;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: white;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+button:disabled {
+  background: #475569;
+  cursor: not-allowed;
+}
+
+/* 🔴 Logout button */
+.logout-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.logout-btn:hover {
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* 📋 List */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  transition: 0.2s;
+}
+
+li:hover {
+  transform: scale(1.01);
+  background: linear-gradient(135deg, #334155, #475569);
+}
+
+/* 🔔 Toast */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  padding: 12px 18px;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+/* ✨ Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
   from {
-    transform: rotate(0deg);
+    transform: translateY(15px);
+    opacity: 0;
   }
   to {
-    transform: rotate(360deg);
+    transform: translateY(0);
+    opacity: 1;
   }
+}
+
+/* 🧱 App Layout */
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+/* 📌 Sidebar */
+.sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, #020617, #020617 60%, #0f172a);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+/* 🧾 Logo */
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 30px;
+  background: linear-gradient(90deg, #38bdf8, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 🔘 Sidebar buttons */
+.sidebar button {
+  width: 100%;
+  margin-bottom: 10px;
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.sidebar button:hover {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+}
+
+/* 📄 Main Content */
+.main {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  animation: fadeIn 0.5s ease;
+}
+
+/* 📦 Improve card spacing in main */
+.main .card {
+  max-width: 700px;
+}
+
+/* 🔴 Better logout button placement */
+.sidebar .logout-btn {
+  margin-top: auto;
+}
+
+/* ✨ Smooth hover for list items */
+li {
+  cursor: pointer;
+}
+
+/* ✨ Subtle scrollbar */
+.main::-webkit-scrollbar {
+  width: 6px;
+}
+
+.main::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 10px;
+}
+.sidebar .logout-btn {
+  margin-top: auto;
 }
