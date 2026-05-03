@@ -4,13 +4,7 @@ import axios from "axios";
 function Dashboard({ token, setToken }) {
   const API = "https://baas-backend-production.up.railway.app";
 
-  const [view, setView] = useState("projects");
-
-  const [projects, setProjects] = useState([]);
-  const [name, setName] = useState("");
-
-  const [apiKeys, setApiKeys] = useState([]);
-  const [projectId, setProjectId] = useState("");
+  const [view, setView] = useState("data");
 
   const [message, setMessage] = useState("");
 
@@ -19,6 +13,14 @@ function Dashboard({ token, setToken }) {
   const [data, setData] = useState([]);
   const [jsonInput, setJsonInput] = useState("{}");
   const [apiKey, setApiKey] = useState("");
+
+  // SEARCH
+  const [field, setField] = useState("");
+  const [value, setValue] = useState("");
+
+  // PAGINATION
+  const [page, setPage] = useState(1);
+  const limit = 5;
 
   // EDIT
   const [editId, setEditId] = useState(null);
@@ -35,83 +37,20 @@ function Dashboard({ token, setToken }) {
     showMessage("Logged out 👋");
   };
 
-  // ================= PROJECT =================
-
-  const createProject = async () => {
-    try {
-      await axios.post(
-        `${API}/api/project/create`,
-        { name },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      showMessage("Project created ✅");
-      setName("");
-    } catch {
-      showMessage("Error creating project");
-    }
-  };
-
-  const getProjects = async () => {
-    try {
-      const res = await axios.get(`${API}/api/project`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setProjects(res.data);
-    } catch {
-      showMessage("Error loading projects");
-    }
-  };
-
-  // ================= API KEYS =================
-
-  const createApiKey = async () => {
-    try {
-      await axios.post(
-        `${API}/api/user/create-api-key`,
-        { project_id: projectId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      showMessage("API key created ✅");
-    } catch {
-      showMessage("Error creating API key");
-    }
-  };
-
-  const getApiKeys = async () => {
-    try {
-      const res = await axios.get(`${API}/api/user/api-keys`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setApiKeys(res.data);
-    } catch {
-      showMessage("Error loading API keys");
-    }
-  };
-
-  const copyKey = (key) => {
-    navigator.clipboard.writeText(key);
-    showMessage("Copied ✅");
-  };
-
-  const deleteKey = async (id) => {
-    try {
-      await axios.delete(`${API}/api/user/api-key/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      showMessage("Deleted ✅");
-      getApiKeys();
-    } catch {
-      showMessage("Delete failed");
-    }
-  };
-
   // ================= DATA =================
 
   const loadData = async () => {
     try {
-      const res = await axios.get(`${API}/api/data/${collection}`, {
+      let url = `${API}/api/data/${collection}?limit=${limit}&page=${page}`;
+
+      if (field && value) {
+        url += `&field=${field}&value=${value}`;
+      }
+
+      const res = await axios.get(url, {
         headers: { Authorization: `Bearer ${apiKey}` },
       });
+
       setData(res.data);
     } catch {
       showMessage("Error loading data");
@@ -123,9 +62,7 @@ function Dashboard({ token, setToken }) {
       await axios.post(
         `${API}/api/data/${collection}`,
         { json: JSON.parse(jsonInput) },
-        {
-          headers: { Authorization: `Bearer ${apiKey}` },
-        }
+        { headers: { Authorization: `Bearer ${apiKey}` } }
       );
       showMessage("Data added ✅");
       loadData();
@@ -136,12 +73,9 @@ function Dashboard({ token, setToken }) {
 
   const deleteData = async (id) => {
     try {
-      await axios.delete(
-        `${API}/api/data/${collection}/${id}`,
-        {
-          headers: { Authorization: `Bearer ${apiKey}` },
-        }
-      );
+      await axios.delete(`${API}/api/data/${collection}/${id}`, {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      });
       showMessage("Deleted ✅");
       loadData();
     } catch {
@@ -154,9 +88,7 @@ function Dashboard({ token, setToken }) {
       await axios.put(
         `${API}/api/data/${collection}/${id}`,
         { json: editRow },
-        {
-          headers: { Authorization: `Bearer ${apiKey}` },
-        }
+        { headers: { Authorization: `Bearer ${apiKey}` } }
       );
 
       showMessage("Updated ✅");
@@ -167,8 +99,6 @@ function Dashboard({ token, setToken }) {
     }
   };
 
-  // ================= UI =================
-
   const columns =
     data.length > 0 ? Object.keys(data[0].json_data) : [];
 
@@ -177,158 +107,134 @@ function Dashboard({ token, setToken }) {
 
       {message && <div className="toast">{message}</div>}
 
-      {/* SIDEBAR */}
       <div className="sidebar">
         <h2>BaaS ⚡</h2>
-
-        <button onClick={() => setView("projects")}>Projects</button>
-        <button onClick={() => setView("keys")}>API Keys</button>
         <button onClick={() => setView("data")}>Data</button>
-
-        <button className="logout-btn" onClick={logout}>
-          Logout
-        </button>
+        <button className="logout-btn" onClick={logout}>Logout</button>
       </div>
 
-      {/* MAIN */}
       <div className="main">
 
-        {/* PROJECTS */}
-        {view === "projects" && (
-          <>
-            <div className="card">
-              <h2>Create Project</h2>
-              <input value={name} onChange={(e) => setName(e.target.value)} />
-              <button onClick={createProject}>Create</button>
-            </div>
+        <div className="card">
+          <h2>Data Explorer 🚀</h2>
 
-            <div className="card">
-              <h2>Projects</h2>
-              <button onClick={getProjects}>Load</button>
+          <input
+            placeholder="API Key"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+          />
 
-              <ul>
-                {projects.map((p) => (
-                  <li key={p.id}>
-                    {p.name} (ID: {p.id})
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </>
-        )}
+          <input
+            placeholder="Collection"
+            value={collection}
+            onChange={(e) => setCollection(e.target.value)}
+          />
 
-        {/* API KEYS */}
-        {view === "keys" && (
-          <div className="card">
-            <h2>API Keys</h2>
-
-            <input onChange={(e) => setProjectId(e.target.value)} />
-
-            <button onClick={createApiKey}>Create</button>
-            <button onClick={getApiKeys}>Load</button>
-
-            <ul>
-              {apiKeys.map((k) => (
-                <li key={k.id}>
-                  {k.project_name} → ****{k.api_key.slice(-6)}
-                  <button onClick={() => copyKey(k.api_key)}>Copy</button>
-                  <button onClick={() => deleteKey(k.id)}>Delete</button>
-                </li>
-              ))}
-            </ul>
+          {/* SEARCH */}
+          <div style={{ display: "flex", gap: 10 }}>
+            <input
+              placeholder="Field"
+              value={field}
+              onChange={(e) => setField(e.target.value)}
+            />
+            <input
+              placeholder="Value"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+            />
           </div>
-        )}
 
-        {/* DATA */}
-        {view === "data" && (
-          <div className="card">
-            <h2>Data Explorer 🚀</h2>
+          <button onClick={loadData}>Load / Search</button>
 
-            <input
-              placeholder="API Key"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-            />
+          <textarea
+            rows="4"
+            value={jsonInput}
+            onChange={(e) => setJsonInput(e.target.value)}
+          />
 
-            <input
-              placeholder="Collection"
-              value={collection}
-              onChange={(e) => setCollection(e.target.value)}
-            />
+          <button onClick={createData}>Add</button>
 
-            <button onClick={loadData}>Load</button>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                {columns.map((col) => (
+                  <th key={col}>{col}</th>
+                ))}
+                <th>Actions</th>
+              </tr>
+            </thead>
 
-            <textarea
-              rows="4"
-              value={jsonInput}
-              onChange={(e) => setJsonInput(e.target.value)}
-            />
+            <tbody>
+              {data.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.id}</td>
 
-            <button onClick={createData}>Add</button>
-
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
                   {columns.map((col) => (
-                    <th key={col}>{col}</th>
-                  ))}
-                  <th>Actions</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {data.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.id}</td>
-
-                    {columns.map((col) => (
-                      <td key={col}>
-                        {editId === item.id ? (
-                          <input
-                            value={editRow[col] || ""}
-                            onChange={(e) =>
-                              setEditRow({
-                                ...editRow,
-                                [col]: e.target.value,
-                              })
-                            }
-                          />
-                        ) : (
-                          item.json_data[col]
-                        )}
-                      </td>
-                    ))}
-
-                    <td>
+                    <td key={col}>
                       {editId === item.id ? (
-                        <>
-                          <button onClick={() => updateData(item.id)}>Save</button>
-                          <button onClick={() => setEditId(null)}>Cancel</button>
-                        </>
+                        <input
+                          value={editRow[col] || ""}
+                          onChange={(e) =>
+                            setEditRow({
+                              ...editRow,
+                              [col]: e.target.value,
+                            })
+                          }
+                        />
                       ) : (
-                        <>
-                          <button
-                            onClick={() => {
-                              setEditId(item.id);
-                              setEditRow(item.json_data);
-                            }}
-                          >
-                            Edit
-                          </button>
-                          <button onClick={() => deleteData(item.id)}>
-                            Delete
-                          </button>
-                        </>
+                        item.json_data[col]
                       )}
                     </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  ))}
 
+                  <td>
+                    {editId === item.id ? (
+                      <>
+                        <button onClick={() => updateData(item.id)}>Save</button>
+                        <button onClick={() => setEditId(null)}>Cancel</button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => {
+                            setEditId(item.id);
+                            setEditRow(item.json_data);
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button onClick={() => deleteData(item.id)}>
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* PAGINATION */}
+          <div style={{ marginTop: 20 }}>
+            <button
+              onClick={() => {
+                if (page > 1) setPage(page - 1);
+              }}
+            >
+              Prev
+            </button>
+
+            <span style={{ margin: "0 10px" }}>
+              Page {page}
+            </span>
+
+            <button onClick={() => setPage(page + 1)}>
+              Next
+            </button>
           </div>
-        )}
+
+        </div>
 
       </div>
     </div>
