@@ -1,12 +1,32 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 function Docs() {
   const API = "https://baas-backend-production.up.railway.app";
+  const navigate = useNavigate();
+
+  const copy = (text) => {
+    navigator.clipboard.writeText(text);
+  };
 
   return (
     <div className="container">
 
+      {/* HEADER */}
       <h1>BaaS API Docs 🚀</h1>
+
+      <div style={{ marginBottom: 20 }}>
+        <button onClick={() => navigate("/tester")}>
+          Try API 🧪
+        </button>
+
+        <button
+          onClick={() => navigate("/auth")}
+          style={{ marginLeft: 10 }}
+        >
+          Get API Key 🔑
+        </button>
+      </div>
 
       {/* BASE URL */}
       <h2>Base URL</h2>
@@ -15,7 +35,7 @@ function Docs() {
       {/* QUICK START */}
       <h2>⚡ Quick Start</h2>
       <pre>
-{`1. Create account from dashboard
+{`1. Login / Signup
 2. Create a project
 3. Generate API key
 4. Use API below`}
@@ -23,9 +43,7 @@ function Docs() {
 
       {/* AUTH */}
       <h2>🔐 Authentication</h2>
-      <pre>
-{`Authorization: Bearer YOUR_API_KEY`}
-      </pre>
+      <pre>{`Authorization: Bearer YOUR_API_KEY`}</pre>
 
       {/* CREATE */}
       <h2>➕ Create Data</h2>
@@ -35,6 +53,9 @@ function Docs() {
 -H "Content-Type: application/json" \\
 -d '{"json":{"name":"Rahul","age":22}}'`}
       </pre>
+      <button onClick={() => copy(`curl -X POST ${API}/api/data/users ...`)}>
+        Copy
+      </button>
 
       {/* GET */}
       <h2>📥 Get Data</h2>

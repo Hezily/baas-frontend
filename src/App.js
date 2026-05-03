@@ -5,13 +5,14 @@ import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Docs from "./pages/Docs";
+import ApiTester from "./pages/ApiTester"; // ✅ NEW
 
 import "./App.css";
 
 function App() {
   const [token, setToken] = useState("");
 
-  // 🔥 Persist login (IMPORTANT)
+  // 🔥 Persist login
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     if (savedToken) {
@@ -27,6 +28,7 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/auth" element={<Auth setToken={setToken} />} />
         <Route path="/docs" element={<Docs />} />
+        <Route path="/tester" element={<ApiTester />} /> {/* ✅ NEW */}
 
         {/* 🔐 PROTECTED ROUTE */}
         <Route
