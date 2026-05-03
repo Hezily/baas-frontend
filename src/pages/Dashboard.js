@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Dashboard({ token, setToken }) {
   const API = "https://baas-backend-production.up.railway.app";
+  const navigate = useNavigate();
 
   const [message, setMessage] = useState("");
 
@@ -28,7 +30,7 @@ function Dashboard({ token, setToken }) {
   const logout = () => {
     setToken("");
     localStorage.removeItem("token");
-    showMessage("Logged out 👋");
+    navigate("/");
   };
 
   // ================= DATA =================
@@ -50,6 +52,11 @@ function Dashboard({ token, setToken }) {
       showMessage("Error loading data");
     }
   };
+
+  // 🔥 Auto reload when page changes
+  useEffect(() => {
+    if (apiKey) loadData();
+  }, [page]);
 
   const createData = async () => {
     try {
@@ -93,6 +100,12 @@ function Dashboard({ token, setToken }) {
     }
   };
 
+  // 🔥 Reset page when searching
+  const handleSearch = () => {
+    setPage(1);
+    loadData();
+  };
+
   const columns =
     data.length > 0 ? Object.keys(data[0].json_data) : [];
 
@@ -103,7 +116,14 @@ function Dashboard({ token, setToken }) {
 
       <div className="sidebar">
         <h2>BaaS ⚡</h2>
-        <button className="logout-btn" onClick={logout}>Logout</button>
+
+        <button onClick={() => navigate("/docs")}>
+          API Docs
+        </button>
+
+        <button className="logout-btn" onClick={logout}>
+          Logout
+        </button>
       </div>
 
       <div className="main">
@@ -127,7 +147,10 @@ function Dashboard({ token, setToken }) {
           <input
             placeholder="Collection"
             value={collection}
-            onChange={(e) => setCollection(e.target.value)}
+            onChange={(e) => {
+              setCollection(e.target.value);
+              setPage(1);
+            }}
           />
 
           {/* SEARCH */}
@@ -144,7 +167,7 @@ function Dashboard({ token, setToken }) {
             />
           </div>
 
-          <button onClick={loadData}>Load / Search</button>
+          <button onClick={handleSearch}>Load / Search</button>
 
           <textarea
             rows="4"

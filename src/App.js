@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Docs from "./pages/Docs"; // ✅ NEW
+
 import "./App.css";
 
 function App() {
@@ -11,8 +13,12 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Auth setToken={setToken} />} />
 
+        {/* 🔓 Public routes */}
+        <Route path="/" element={<Auth setToken={setToken} />} />
+        <Route path="/docs" element={<Docs />} /> {/* ✅ PUBLIC */}
+
+        {/* 🔐 Protected route */}
         <Route
           path="/dashboard"
           element={
@@ -23,6 +29,10 @@ function App() {
             )
           }
         />
+
+        {/* ❗ Fallback */}
+        <Route path="*" element={<Navigate to="/" />} />
+
       </Routes>
     </BrowserRouter>
   );
