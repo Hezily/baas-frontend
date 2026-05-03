@@ -1,17 +1,23 @@
-import Landing from "./pages/Landing";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-
+import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Docs from "./pages/Docs";
-
 
 import "./App.css";
 
 function App() {
   const [token, setToken] = useState("");
+
+  // 🔥 Persist login (IMPORTANT)
+  useEffect(() => {
+    const savedToken = localStorage.getItem("token");
+    if (savedToken) {
+      setToken(savedToken);
+    }
+  }, []);
 
   return (
     <BrowserRouter>
