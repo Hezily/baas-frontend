@@ -4,25 +4,19 @@ import axios from "axios";
 function Dashboard({ token, setToken }) {
   const API = "https://baas-backend-production.up.railway.app";
 
-  const [view, setView] = useState("data");
-
   const [message, setMessage] = useState("");
 
-  // DATA
   const [collection, setCollection] = useState("users");
   const [data, setData] = useState([]);
   const [jsonInput, setJsonInput] = useState("{}");
   const [apiKey, setApiKey] = useState("");
 
-  // SEARCH
   const [field, setField] = useState("");
   const [value, setValue] = useState("");
 
-  // PAGINATION
   const [page, setPage] = useState(1);
   const limit = 5;
 
-  // EDIT
   const [editId, setEditId] = useState(null);
   const [editRow, setEditRow] = useState({});
 
@@ -109,11 +103,17 @@ function Dashboard({ token, setToken }) {
 
       <div className="sidebar">
         <h2>BaaS ⚡</h2>
-        <button onClick={() => setView("data")}>Data</button>
         <button className="logout-btn" onClick={logout}>Logout</button>
       </div>
 
       <div className="main">
+
+        {/* 📊 STATS */}
+        <div style={{ display: "flex", gap: 15, marginBottom: 20 }}>
+          <div className="card">Collection: {collection}</div>
+          <div className="card">Records: {data.length}</div>
+          <div className="card">Page: {page}</div>
+        </div>
 
         <div className="card">
           <h2>Data Explorer 🚀</h2>
