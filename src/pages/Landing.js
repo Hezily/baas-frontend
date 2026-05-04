@@ -10,19 +10,19 @@ function Landing() {
       <section className="hero">
         <h1>BaaS ⚡</h1>
 
-        <p>
-          Build your backend in minutes.  
+        <p className="hero-sub">
+          Build your backend in minutes.
           No servers. No complexity. Just API.
         </p>
 
-        <div style={{ marginTop: 20 }}>
+        <div className="hero-buttons">
           <button onClick={() => navigate("/auth")}>
             Get Started
           </button>
 
           <button
+            className="secondary"
             onClick={() => navigate("/docs")}
-            style={{ marginLeft: 10 }}
           >
             View Docs
           </button>
@@ -35,44 +35,48 @@ function Landing() {
         <div className="card">
           <h3>⚡ Instant API</h3>
           <p>
-            Create, read, update and delete data instantly with simple REST APIs.
+            Create, read, update and delete data instantly with REST APIs.
           </p>
         </div>
 
         <div className="card">
           <h3>🔐 Secure</h3>
           <p>
-            Protect your data using API keys and authentication.
+            API key-based authentication keeps your data protected.
+          </p>
+        </div>
+
+        <div className="card">
+          <h3>🧪 Built-in Tester</h3>
+          <p>
+            Test APIs directly in your browser like Postman.
           </p>
         </div>
 
         <div className="card">
           <h3>📊 Dashboard</h3>
           <p>
-            Manage your collections and data visually like a real database.
+            Manage projects, API keys, and data visually.
           </p>
         </div>
 
       </section>
 
-      {/* CTA SECTION */}
-      <section style={{ marginTop: 80 }}>
+      {/* CTA */}
+      <section className="cta">
         <h2>Start building today 🚀</h2>
-        <p style={{ color: "#94a3b8" }}>
-          No setup required. Just login and go.
+        <p>
+          No setup required. Create your backend in seconds.
         </p>
 
-        <button
-          onClick={() => navigate("/auth")}
-          style={{ marginTop: 15 }}
-        >
-          Create Account
+        <button onClick={() => navigate("/auth")}>
+          Create Free Account
         </button>
       </section>
 
       {/* FOOTER */}
-      <footer style={{ marginTop: 80 }}>
-        <p>Built with ❤️ by you</p>
+      <footer className="footer">
+        <p>© 2026 BaaS — Built by you 🚀</p>
       </footer>
 
     </div>

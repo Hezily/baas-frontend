@@ -287,3 +287,59 @@ footer {
   margin-top: 80px;
   color: #64748b;
 }
+/* HERO */
+.hero {
+  margin-top: 100px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 56px;
+  font-weight: bold;
+}
+
+.hero-sub {
+  margin-top: 10px;
+  font-size: 18px;
+  color: #94a3b8;
+}
+
+.hero-buttons {
+  margin-top: 25px;
+}
+
+.hero-buttons button {
+  margin: 5px;
+}
+
+/* SECONDARY BUTTON */
+.secondary {
+  background: transparent;
+  border: 1px solid #3b82f6;
+}
+
+/* FEATURES */
+.features {
+  margin-top: 80px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+/* CTA */
+.cta {
+  margin-top: 100px;
+  text-align: center;
+}
+
+.cta p {
+  color: #94a3b8;
+  margin-top: 10px;
+}
+
+/* FOOTER */
+.footer {
+  margin-top: 100px;
+  text-align: center;
+  color: #64748b;
+}
