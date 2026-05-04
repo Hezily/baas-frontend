@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 function ApiTester() {
@@ -9,23 +9,32 @@ function ApiTester() {
   const [endpoint, setEndpoint] = useState("/api/data/users");
   const [json, setJson] = useState("{}");
   const [response, setResponse] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState([]);
+
+  // 🔥 Load history
+  useEffect(() => {
+    const saved = localStorage.getItem("api_history");
+    if (saved) setHistory(JSON.parse(saved));
+  }, []);
+
+  // 🔥 Save history
+  const saveHistory = (entry) => {
+    const updated = [entry, ...history].slice(0, 10); // keep last 10
+    setHistory(updated);
+    localStorage.setItem("api_history", JSON.stringify(updated));
+  };
 
   const sendRequest = async () => {
     try {
-      setLoading(true);
-
       const url = BASE + endpoint;
       let res;
 
-      // 🔹 GET
       if (method === "GET") {
         res = await axios.get(url, {
           headers: { Authorization: `Bearer ${apiKey}` },
         });
       }
 
-      // 🔹 POST
       if (method === "POST") {
         res = await axios.post(
           url,
@@ -34,7 +43,6 @@ function ApiTester() {
         );
       }
 
-      // 🔹 PUT
       if (method === "PUT") {
         res = await axios.put(
           url,
@@ -43,7 +51,6 @@ function ApiTester() {
         );
       }
 
-      // 🔹 DELETE
       if (method === "DELETE") {
         res = await axios.delete(url, {
           headers: { Authorization: `Bearer ${apiKey}` },
@@ -51,17 +58,26 @@ function ApiTester() {
       }
 
       setResponse(JSON.stringify(res.data, null, 2));
+
+      // 🔥 Save request
+      saveHistory({ method, endpoint, json });
+
     } catch (err) {
       setResponse(
         JSON.stringify(
-          err.response?.data || { error: "Invalid request / JSON" },
+          err.response?.data || { error: "Request failed" },
           null,
           2
         )
       );
-    } finally {
-      setLoading(false);
     }
+  };
+
+  // 🔁 Replay request
+  const replay = (item) => {
+    setMethod(item.method);
+    setEndpoint(item.endpoint);
+    setJson(item.json || "{}");
   };
 
   return (
@@ -74,7 +90,6 @@ function ApiTester() {
         onChange={(e) => setApiKey(e.target.value)}
       />
 
-      {/* METHOD + ENDPOINT */}
       <div style={{ display: "flex", gap: 10 }}>
         <select value={method} onChange={(e) => setMethod(e.target.value)}>
           <option>GET</option>
@@ -85,28 +100,36 @@ function ApiTester() {
 
         <input
           style={{ flex: 1 }}
-          placeholder="/api/data/users"
           value={endpoint}
           onChange={(e) => setEndpoint(e.target.value)}
         />
       </div>
 
-      {/* BODY */}
       {(method === "POST" || method === "PUT") && (
         <textarea
-          rows="5"
+          rows="4"
           value={json}
           onChange={(e) => setJson(e.target.value)}
         />
       )}
 
-      <button onClick={sendRequest} disabled={loading}>
-        {loading ? "Sending..." : "Send Request"}
-      </button>
+      <button onClick={sendRequest}>Send Request</button>
 
-      {/* RESPONSE */}
       <h3>Response</h3>
       <pre>{response}</pre>
+
+      {/* 🔥 HISTORY */}
+      <h3>History</h3>
+      <ul>
+        {history.map((item, i) => (
+          <li key={i}>
+            <b>{item.method}</b> {item.endpoint}
+            <button onClick={() => replay(item)} style={{ marginLeft: 10 }}>
+              Replay
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
