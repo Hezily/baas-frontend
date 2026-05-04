@@ -11,7 +11,8 @@ function Dashboard({ token, setToken }) {
   const [collection, setCollection] = useState("users");
   const [data, setData] = useState([]);
   const [jsonInput, setJsonInput] = useState("{}");
-  const [apiKey, setApiKey] = useState("");
+
+  const [apiKey, setApiKey] = useState(""); // auto-filled now
 
   const [field, setField] = useState("");
   const [value, setValue] = useState("");
@@ -31,6 +32,27 @@ function Dashboard({ token, setToken }) {
     setToken("");
     localStorage.removeItem("token");
     navigate("/");
+  };
+
+  // 🚀 AUTO LOAD API KEY (IMPORTANT)
+  useEffect(() => {
+    if (token) {
+      loadApiKey();
+    }
+  }, [token]);
+
+  const loadApiKey = async () => {
+    try {
+      const res = await axios.get(`${API}/api/user/api-keys`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.data.length > 0) {
+        setApiKey(res.data[0].api_key); // first key auto-set
+      }
+    } catch {
+      showMessage("Error loading API key");
+    }
   };
 
   // ================= DATA =================
@@ -53,10 +75,12 @@ function Dashboard({ token, setToken }) {
     }
   };
 
-  // 🔥 Auto reload when page changes
+  // 🔥 Auto reload when page OR apiKey changes
   useEffect(() => {
-    if (apiKey) loadData();
-  }, [page]);
+    if (apiKey) {
+      loadData();
+    }
+  }, [page, apiKey]);
 
   const createData = async () => {
     try {
@@ -65,6 +89,7 @@ function Dashboard({ token, setToken }) {
         { json: JSON.parse(jsonInput) },
         { headers: { Authorization: `Bearer ${apiKey}` } }
       );
+
       showMessage("Data added ✅");
       loadData();
     } catch {
@@ -77,6 +102,7 @@ function Dashboard({ token, setToken }) {
       await axios.delete(`${API}/api/data/${collection}/${id}`, {
         headers: { Authorization: `Bearer ${apiKey}` },
       });
+
       showMessage("Deleted ✅");
       loadData();
     } catch {
@@ -100,7 +126,6 @@ function Dashboard({ token, setToken }) {
     }
   };
 
-  // 🔥 Reset page when searching
   const handleSearch = () => {
     setPage(1);
     loadData();
@@ -114,6 +139,7 @@ function Dashboard({ token, setToken }) {
 
       {message && <div className="toast">{message}</div>}
 
+      {/* SIDEBAR */}
       <div className="sidebar">
         <h2>BaaS ⚡</h2>
 
@@ -121,11 +147,16 @@ function Dashboard({ token, setToken }) {
           API Docs
         </button>
 
+        <button onClick={() => navigate("/tester")}>
+          API Tester
+        </button>
+
         <button className="logout-btn" onClick={logout}>
           Logout
         </button>
       </div>
 
+      {/* MAIN */}
       <div className="main">
 
         {/* 📊 STATS */}
@@ -139,7 +170,7 @@ function Dashboard({ token, setToken }) {
           <h2>Data Explorer 🚀</h2>
 
           <input
-            placeholder="API Key"
+            placeholder="API Key (auto-filled)"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
           />
@@ -177,6 +208,7 @@ function Dashboard({ token, setToken }) {
 
           <button onClick={createData}>Add</button>
 
+          {/* TABLE */}
           <table className="data-table">
             <thead>
               <tr>
@@ -241,9 +273,7 @@ function Dashboard({ token, setToken }) {
           {/* PAGINATION */}
           <div style={{ marginTop: 20 }}>
             <button
-              onClick={() => {
-                if (page > 1) setPage(page - 1);
-              }}
+              onClick={() => page > 1 && setPage(page - 1)}
             >
               Prev
             </button>
